@@ -5,8 +5,12 @@
 package it.polito.tdp.nyc;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import it.polito.tdp.nyc.model.Model;
+import it.polito.tdp.nyc.model.Quartiere;
+import it.polito.tdp.nyc.model.Quartieri_Distanza;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -39,7 +43,7 @@ public class FXMLController {
     private ComboBox<String> cmbProvider; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbQuartiere"
-    private ComboBox<?> cmbQuartiere; // Value injected by FXMLLoader
+    private ComboBox<Quartiere> cmbQuartiere; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtMemoria"
     private TextField txtMemoria; // Value injected by FXMLLoader
@@ -48,22 +52,40 @@ public class FXMLController {
     private TextArea txtResult; // Value injected by FXMLLoader
     
     @FXML // fx:id="clQuartiere"
-    private TableColumn<?, ?> clQuartiere; // Value injected by FXMLLoader
+    private TableColumn<Quartieri_Distanza, String> clQuartiere; // Value injected by FXMLLoader
  
     @FXML // fx:id="clDistanza"
-    private TableColumn<?, ?> clDistanza; // Value injected by FXMLLoader
+    private TableColumn<Quartieri_Distanza, Double> clDistanza; // Value injected by FXMLLoader
     
     @FXML // fx:id="tblQuartieri"
-    private TableView<?> tblQuartieri; // Value injected by FXMLLoader
+    private TableView<Quartieri_Distanza> tblQuartieri; // Value injected by FXMLLoader
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	txtResult.clear();
+    	String provider= cmbProvider.getValue();
+    	if(provider==null) {
+    		txtResult.setText("Selezionare un provider dalla comboBox");
+    		return;
+    	}
+    	this.model.creaGrafo(provider);
+    	txtResult.appendText("Grafo creato con successo\n");
+    	txtResult.appendText("Numero di vertici: "+this.model.getNumeroVertici()+"\n");
+    	txtResult.appendText("Numero di archi : "+this.model.getNumeroArchi());
+    	cmbQuartiere.getItems().clear();
+    	cmbQuartiere.getItems().addAll(this.model.getQuartieri());
     	
     }
 
     @FXML
     void doQuartieriAdiacenti(ActionEvent event) {
-    	
+    	Quartiere selezionato= cmbQuartiere.getValue();
+    	if(selezionato==null) {
+    		txtResult.appendText("ERRORE: devi selezionare un quartiere dall'apposita comboBox");
+    		return;
+    	}
+    	List<Quartieri_Distanza> result= this.model.getVicini(selezionato);
+    	tblQuartieri.setItems(FXCollections.observableArrayList(result));
     }
 
     @FXML
@@ -87,6 +109,7 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.cmbProvider.getItems().addAll(this.model.getProviders());
     }
 
 }
